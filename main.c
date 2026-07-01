@@ -6,29 +6,22 @@
 #define gridWidth 10
 #define gridHeight 18
 
-void blockDropTime(){
+int blockDropTime = 0;
+
+int blockDropTimeFunc(){
     
-    int blockDropTime = 0;
 
-    int timeNeededToDropBlock = 1000;
-
-    //GetTime();
     blockDropTime += 1;
 
-    printf("%d", blockDropTime);
-    printf("\n");
+    if(blockDropTime > 60){
+         blockDropTime = 0;
+         return 1;
+     }
+     else{
+         return 0;
+    }
 
-    // if(blockDropTime <= timeNeededToDropBlock){
-    //     blockDropTime += 2;
-    //     printf("current block drop time: %d", blockDropTime);
-    //     printf("\n");
-    // }
-    // if(blockDropTime > timeNeededToDropBlock){
-    //     blockDropTime = 0;
-    //     printf("move block down by one");
-    //     printf("\n");
-    // }
-    
+
 }
 
 //------------------------------------------------------------------------------------
@@ -49,7 +42,11 @@ int main(void)
 
     int gridInfo[gridWidth][gridHeight];
 
+    int xVal = 4;
+    int yVal = 1;
+
     // int tetrisPieceGravity;
+
     
     for (int i = 0; i < gridWidth; i++){
         for(int j = 0; j < gridHeight; j++){
@@ -81,11 +78,29 @@ int main(void)
         drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
 
         //drawTPiece(4, 4, squarePixelSize, RED);
-        drawSquareOnGrid(4, 4, squarePixelSize, RED);
+        drawSquareOnGrid(xVal, yVal, squarePixelSize, RED);
 
         drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
 
-        blockDropTime();
+        // xVal += blockDropTimeFunc();
+
+        printf("%d", blockDropTimeFunc());
+        printf("\n");
+
+        yVal += blockDropTimeFunc();
+
+        if(IsKeyPressed(KEY_LEFT) && xVal > 0){
+            xVal -= 1;
+        }
+
+        if(IsKeyPressed(KEY_RIGHT) && xVal < gridWidth - 1){
+            xVal += 1;
+        }
+
+        if(yVal >= gridHeight - 1){
+            printf("block hit bottom");
+        }
+
 
         ClearBackground(BLACK);
         
