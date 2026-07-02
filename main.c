@@ -23,8 +23,6 @@ int blockDropTimeFunc(){
 
     if(blockDropTime > 60){
         blockDropTime = 0;
-        printf("block dropped");
-        printf("\n");
         return 1;
      }
      else{
@@ -33,18 +31,19 @@ int blockDropTimeFunc(){
     }
 }
 
-int controlBlock(Point2DStruct *Point2DStruct){
+int controlBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight]){
 
     assert(Point2DStruct != NULL);
     // crashes if null pointer
-        if(IsKeyPressed(KEY_LEFT) && Point2DStruct->xVal > 0){
+        if(IsKeyPressed(KEY_LEFT) && Point2DStruct->xVal > 0 && grid[(Point2DStruct->xVal) - 1][Point2DStruct->yVal] != 1){
             Point2DStruct->xVal -= 1;
         }
 
-        if(IsKeyPressed(KEY_RIGHT) && Point2DStruct->xVal < gridWidth - 1){
+        if(IsKeyPressed(KEY_RIGHT) && Point2DStruct->xVal < gridWidth - 1 && grid[(Point2DStruct->xVal) + 1][Point2DStruct->yVal] != 1){
             //*pXVal += 1;
             Point2DStruct->xVal += 1;
         }
+        // dont put structs in main says grace
     
 }
 
@@ -65,7 +64,9 @@ int main(void)
     const int screenHeight = gridHeight * squarePixelSize;
 
 
-    int gridInfo[gridWidth][gridHeight];
+    int grid[gridWidth][gridHeight];
+    //arrays are pointers????
+
 
     // int xVal = 4;
     // int yVal = 1;
@@ -81,7 +82,7 @@ int main(void)
     
     for (int i = 0; i < gridWidth; i++){
         for(int j = 0; j < gridHeight; j++){
-            gridInfo[i][j] = 0;
+            grid[i][j] = 0;
         }
     }
 
@@ -96,59 +97,30 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
-
-        // Draw
-
-        //----------------------------------------------------------------------------------
+        
         BeginDrawing();
 
         drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
 
-        //drawTPiece(4, 4, squarePixelSize, RED);
-        //printf("X Val: %d, Y Val: %d", xVal, yVal);
-                    //printf("\n");
-        // drawSquareOnGrid(xVal, yVal, squarePixelSize, RED);
+        
 
-        // drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
+        if(grid[mainPiecePoint2D.xVal][mainPiecePoint2D.yVal + 1] != 1){
+            mainPiecePoint2D.yVal += blockDropTimeFunc();
+        }
 
-        // xVal += blockDropTimeFunc();
-
-        // printf("%d", blockDropTimeFunc());
-        // printf("\n");
-
-        mainPiecePoint2D.yVal += blockDropTimeFunc();
-
-
-        controlBlock(pPoint2DStruct);
-        // if(IsKeyPressed(KEY_LEFT) && xVal > 0){
-        //     xVal -= 1;
-        // }
-
-        // if(IsKeyPressed(KEY_RIGHT) && xVal < gridWidth - 1){
-        //     xVal += 1;
-        // }
+        controlBlock(pPoint2DStruct, grid);
+        
 
         if(mainPiecePoint2D.yVal == gridHeight){
-            printf("block hit bottom atY %d", gridHeight);
-            printf("\n");
-            gridInfo[mainPiecePoint2D.xVal][gridHeight - 1] = 1;
+            grid[mainPiecePoint2D.xVal][gridHeight - 1] = 1;
         }
 
 
 
         for (int i = 0; i < gridWidth; i++){
             for(int j = 0; j < gridHeight; j++){
-                if(gridInfo[i][j] == 1){
+                if(grid[i][j] == 1){
                     drawSquareOnGrid(i, j, squarePixelSize, GREEN);
-
-
-                    //xVal = INITXSTART;
-                    //yVal = INITYSTART;
-                    
 
                     }
                 }
