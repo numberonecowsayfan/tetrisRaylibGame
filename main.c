@@ -12,10 +12,47 @@
 
 int blockDropTime = 0;
 
+typedef enum{
+    CAN_MOVE_LEFT_OR_RIGHT = 0, CANT_MOVE_LEFT = 1, CANT_MOVE_RIGHT = 2
+}BlockRightLeftMovement;
+
 typedef struct{
     int xVal;
     int yVal;
 } Point2DStruct;
+
+void tBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight]){
+    grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
+    grid[Point2DStruct->xVal + 1][Point2DStruct->yVal] = 2;
+    grid[Point2DStruct->xVal - 1][Point2DStruct->yVal] = 2;
+    grid[Point2DStruct->xVal][Point2DStruct->yVal + 1] = 2;
+}
+
+void clearCurrentBlocksOnGrid(int grid[gridWidth][gridHeight]){
+    for (int i = 0; i < gridWidth; i++){
+        for(int j = 0; j < gridHeight; j++){
+            if(grid[i][j] == 2){
+                grid[i][j] = 0;
+            }
+        }
+    }
+}
+
+int checkForValidBlockMovement(int grid[gridWidth][gridHeight]){
+    // if 1, can't move left
+    for (int i = 0; i < gridHeight; i++){
+        if(grid[0][i] == 2){
+            return CANT_MOVE_LEFT;
+        }
+    // if 2, can't move right
+        else if(grid[gridWidth - 1][i] == 2){
+            return CANT_MOVE_RIGHT;
+        }
+
+    }
+    return CAN_MOVE_LEFT_OR_RIGHT;
+}
+
 
 int blockDropTimeFunc(){
     
@@ -37,40 +74,29 @@ void controlBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight])
     assert(Point2DStruct != NULL);
     // crashes if null pointer
         if(IsKeyPressed(KEY_LEFT) && Point2DStruct->xVal > 0 && grid[(Point2DStruct->xVal) - 1][Point2DStruct->yVal] != 1){
-            Point2DStruct->xVal -= 1;
+            if(checkForValidBlockMovement(grid) != CANT_MOVE_LEFT){
+                Point2DStruct->xVal -= 1;
+            }
         }
 
         if(IsKeyPressed(KEY_RIGHT) && Point2DStruct->xVal < gridWidth - 1 && grid[(Point2DStruct->xVal) + 1][Point2DStruct->yVal] != 1){
             //*pXVal += 1;
+            if(checkForValidBlockMovement(grid) != CANT_MOVE_RIGHT){
             Point2DStruct->xVal += 1;
+            }
         }
         // dont put structs in main says grace
-    
 }
 
-// void placeBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight]){
-
-//     for (int i = 0; i < gridWidth; i++){
-//             for(int j = 0; j < gridHeight; j++){
-//                 if(grid[i][j] == 1){
-//                     drawSquareOnGrid(i, j, squarePixelSize, GREEN);
-
-//                     }
-//                 }
-//             }
-//     if(Point2DStruct->yVal == gridHeight){
-//             Point2DStruct->xVal = INITXSTART;
-//             Point2DStruct->yVal = INITYSTART;
-//             // make this function just place a block and put control block back at top, have logic for when
-//             // to place block and reset be separate
-//     }
-// }
 
 void drawCurrentBlocksOnGrid(int grid[gridWidth][gridHeight]){
     for (int i = 0; i < gridWidth; i++){
         for(int j = 0; j < gridHeight; j++){
             if(grid[i][j] == 1){
                 drawSquareOnGrid(i, j, squarePixelSize, GREEN);
+            }
+            if(grid[i][j] == 2){
+                drawSquareOnGrid(i, j, squarePixelSize, RED);
             }
         }
     }
@@ -82,20 +108,35 @@ void resetBlockToTop(Point2DStruct *Point2DStruct){
     Point2DStruct->yVal = INITYSTART;
 }
 
-void blockPlacement(int xVal, int yVal, int grid[gridWidth][gridHeight]){
-    grid[xVal][yVal] = 1;
+void placeActiveBlocks(int grid[gridWidth][gridHeight]){
+    
+    for(int i = 0; i < gridWidth; i++){
+        for(int j = 0; j < gridHeight; j++){
+            if(grid[i][j] == 2){
+                grid[i][j] = 1;
+            }
+        }
+    }
+
 }
 
-int checkForValidBlockPlacement(int xVal, int yVal, int grid[gridWidth][gridHeight]){
-    if(yVal == gridHeight - 1){
-        return 1;
+int checkForValidBlock(int grid[gridWidth][gridHeight]){
+    // if returns 1 place the block
+    for (int i = 0; i < gridWidth; i++){
+        for(int j = 0; j < gridHeight; j++){
+
+            if(grid[i][j] == 2){
+                
+                drawSquareOnGrid(i, j, squarePixelSize, GREEN);
+
+                if(grid[i][j + 1] == 1) {
+                    return 1;
+
+                }
+            }
+        }
     }
-    else if(grid[xVal][(yVal) - 1] == 1){
-        return 2;
-    }
-    else{
-        return 0;
-    }
+    return 0;
 }
 
 //------------------------------------------------------------------------------------
@@ -103,11 +144,7 @@ int checkForValidBlockPlacement(int xVal, int yVal, int grid[gridWidth][gridHeig
 //------------------------------------------------------------------------------------
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    //const int gridWidth = 10;
-    //const int gridHeight = 18;
-    // const int squarePixelSize = 30;
+
     const int gridThickness = 1;
     const Color gridColor = GRAY;
 
@@ -118,10 +155,6 @@ int main(void)
     int grid[gridWidth][gridHeight];
     //arrays are pointers????
 
-    
-
-    // int xVal = 4;
-    // int yVal = 1;
 
     Point2DStruct mainPiecePoint2D = {INITXSTART, INITYSTART};
 
@@ -138,13 +171,7 @@ int main(void)
         }
     }
 
-    blockPlacement(1, 1, grid);
-    grid[2][1] = 1;
-
-    if(grid[2][1] == 1){
-        printf("2 1 has a block");
-        printf("\n");
-    }
+  
     // tetris grid is 10 cells wide 24 cells tall.
 
     InitWindow(screenWidth, screenHeight, "Raylib Tetris Game");
@@ -159,52 +186,26 @@ int main(void)
         
         BeginDrawing();
 
-        drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
-
-        
-
-        if (checkForValidBlockPlacement(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal, grid) == 0){
-            mainPiecePoint2D.yVal += blockDropTimeFunc();
-        }
+        tBlock(pPoint2DStruct, grid);
 
         controlBlock(pPoint2DStruct, grid);
+
+
+
+
+        mainPiecePoint2D.yVal += blockDropTimeFunc();
         
 
-        
-
-
-
-        // for (int i = 0; i < gridWidth; i++){
-        //     for(int j = 0; j < gridHeight; j++){
-        //         if(grid[i][j] == 1){
-        //             drawSquareOnGrid(i, j, squarePixelSize, GREEN);
-
-        //             }
-        //         }
-        //     }
-        
-        
-
-        if(checkForValidBlockPlacement(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal, grid) == 1){
-            // printf("valid placement");
-            // printf("\n");
-            blockPlacement(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal, grid);
-            resetBlockToTop(pPoint2DStruct);
-        }
-        else if(checkForValidBlockPlacement(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal, grid) == 2){
-            blockPlacement(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal - 2, grid);
-            resetBlockToTop(pPoint2DStruct);
-        }
-
-        
-
-        drawSquareOnGrid(mainPiecePoint2D.xVal, mainPiecePoint2D.yVal, squarePixelSize, RED);
-
-        drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
 
         drawCurrentBlocksOnGrid(grid);
 
-        
+        drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
+
+        clearCurrentBlocksOnGrid(grid);
+
+
+
+
         ClearBackground(BLACK);
         
         EndDrawing();
