@@ -120,23 +120,21 @@ void placeActiveBlocks(int grid[gridWidth][gridHeight]){
 
 }
 
-int checkForValidBlock(int grid[gridWidth][gridHeight]){
+bool checkForValidBlockForPlacing(int grid[gridWidth][gridHeight]){
     // if returns 1 place the block
     for (int i = 0; i < gridWidth; i++){
         for(int j = 0; j < gridHeight; j++){
 
             if(grid[i][j] == 2){
-                
-                drawSquareOnGrid(i, j, squarePixelSize, GREEN);
 
                 if(grid[i][j + 1] == 1) {
-                    return 1;
+                    return true;
 
                 }
             }
         }
     }
-    return 0;
+    return false;
 }
 
 //------------------------------------------------------------------------------------
@@ -171,6 +169,7 @@ int main(void)
         }
     }
 
+    grid[4][10] = 1;
   
     // tetris grid is 10 cells wide 24 cells tall.
 
@@ -200,6 +199,11 @@ int main(void)
         drawCurrentBlocksOnGrid(grid);
 
         drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
+
+        if(checkForValidBlockForPlacing(grid) == true){
+            placeActiveBlocks(grid);
+            resetBlockToTop(pPoint2DStruct);
+        }
 
         clearCurrentBlocksOnGrid(grid);
 
