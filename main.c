@@ -22,7 +22,8 @@ typedef enum{
 typedef enum{
     CAN_MOVE_LEFT_OR_RIGHT = 0,
     CANT_MOVE_LEFT = 1,
-    CANT_MOVE_RIGHT = 2
+    CANT_MOVE_RIGHT = 2,
+    CANT_MOVE_LEFT_OR_RIGHT = 3
 
 }BlockRightLeftMovement;
 
@@ -96,20 +97,54 @@ void clearCurrentBlocksOnGrid(int grid[gridWidth][gridHeight]){
     }
 }
 
+// int checkForValidBlockMovement(int grid[gridWidth][gridHeight]){
+//     // if 1, can't move left
+//     for (int i = 0; i < gridHeight; i++){
+//         if(grid[0][i] == 2){
+//             return CANT_MOVE_LEFT;
+//         }
+//     // if 2, can't move right
+//         else if(grid[gridWidth - 1][i] == 2){
+//             return CANT_MOVE_RIGHT;
+//         }
+
+//     }
+//     return CAN_MOVE_LEFT_OR_RIGHT;
+// }
+
 int checkForValidBlockMovement(int grid[gridWidth][gridHeight]){
     // if 1, can't move left
-    for (int i = 0; i < gridHeight; i++){
-        if(grid[0][i] == 2){
-            return CANT_MOVE_LEFT;
-        }
-    // if 2, can't move right
-        else if(grid[gridWidth - 1][i] == 2){
-            return CANT_MOVE_RIGHT;
-        }
+    for (int i = 0; i < gridWidth; i++){
+        for(int j = 0; j < gridHeight; j++){
 
+            // might be able to phase through blocks if cant move left or right?? use commented out code below for fix
+            if(grid[i][j] == 2){
+
+                 if(grid[i - 1][j] == 1 && grid[i + 1][j] == 1) {
+                     return CANT_MOVE_LEFT_OR_RIGHT;
+
+                }
+            }
+
+            if(grid[i][j] == 2){
+
+                if(grid[i - 1][j] == 1) {
+                    return CANT_MOVE_LEFT;
+
+                }
+            }
+
+            if(grid[i][j] == 2){
+
+                if(grid[i + 1][j] == 1) {
+                    return CANT_MOVE_RIGHT;
+
+                }
+            }
+        }
     }
-    return CAN_MOVE_LEFT_OR_RIGHT;
 }
+
 
 
 int blockDropTimeFunc(){
@@ -132,14 +167,14 @@ void controlBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight])
     assert(Point2DStruct != NULL);
     // crashes if null pointer
         if(IsKeyPressed(KEY_LEFT) && Point2DStruct->xVal > 0 && grid[(Point2DStruct->xVal) - 1][Point2DStruct->yVal] != 1){
-            if(checkForValidBlockMovement(grid) != CANT_MOVE_LEFT){
+            if(checkForValidBlockMovement(grid) != CANT_MOVE_LEFT && checkForValidBlockMovement(grid) != CANT_MOVE_LEFT_OR_RIGHT){
                 Point2DStruct->xVal -= 1;
             }
         }
 
         if(IsKeyPressed(KEY_RIGHT) && Point2DStruct->xVal < gridWidth - 1 && grid[(Point2DStruct->xVal) + 1][Point2DStruct->yVal] != 1){
             //*pXVal += 1;
-            if(checkForValidBlockMovement(grid) != CANT_MOVE_RIGHT){
+            if(checkForValidBlockMovement(grid) != CANT_MOVE_RIGHT && checkForValidBlockMovement(grid) != CANT_MOVE_LEFT_OR_RIGHT){
             Point2DStruct->xVal += 1;
             }
         }
