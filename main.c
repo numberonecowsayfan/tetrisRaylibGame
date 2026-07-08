@@ -13,7 +13,17 @@
 int blockDropTime = 0;
 
 typedef enum{
-    CAN_MOVE_LEFT_OR_RIGHT = 0, CANT_MOVE_LEFT = 1, CANT_MOVE_RIGHT = 2
+    rotation0 = 0, 
+    rotation1 = 1,
+    rotation2 = 2,
+    rotation3 = 3,
+}BlockRotation;
+
+typedef enum{
+    CAN_MOVE_LEFT_OR_RIGHT = 0,
+    CANT_MOVE_LEFT = 1,
+    CANT_MOVE_RIGHT = 2
+
 }BlockRightLeftMovement;
 
 typedef struct{
@@ -21,11 +31,59 @@ typedef struct{
     int yVal;
 } Point2DStruct;
 
-void tBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight]){
-    grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
-    grid[Point2DStruct->xVal + 1][Point2DStruct->yVal] = 2;
-    grid[Point2DStruct->xVal - 1][Point2DStruct->yVal] = 2;
-    grid[Point2DStruct->xVal][Point2DStruct->yVal + 1] = 2;
+void tBlock(Point2DStruct *Point2DStruct, int grid[gridWidth][gridHeight], BlockRotation* pCurrentBlockRotation){
+    if(*pCurrentBlockRotation == rotation0){
+        grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal + 1][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal - 1][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal - 1] = 2;
+    }
+    else if(*pCurrentBlockRotation == rotation1){
+        grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal + 1] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal - 1] = 2;
+        grid[Point2DStruct->xVal + 1][Point2DStruct->yVal] = 2;
+    }
+    else if(*pCurrentBlockRotation == rotation2){
+        grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal + 1][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal - 1][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal + 1] = 2;
+    }
+    else if(*pCurrentBlockRotation == rotation3){
+        grid[Point2DStruct->xVal][Point2DStruct->yVal] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal - 1] = 2;
+        grid[Point2DStruct->xVal][Point2DStruct->yVal + 1] = 2;
+        grid[Point2DStruct->xVal - 1][Point2DStruct->yVal] = 2;
+    }
+    else{
+        printf("block rotation error");
+        printf("\n");
+    }
+}
+
+
+void blockRotationFunc(BlockRotation *pCurrentBlockRotation){
+    if(IsKeyPressed(KEY_X)){
+        // pCurrentBlockRotation += 1;
+        if(*pCurrentBlockRotation >= 3){
+            *pCurrentBlockRotation = 0;
+        }
+        else{
+            *pCurrentBlockRotation += 1;
+
+        }
+    }
+    if(IsKeyPressed(KEY_Z)){
+        // pCurrentBlockRotation += 1;
+        if(*pCurrentBlockRotation <= 0){
+            *pCurrentBlockRotation = 3;
+        }
+        else{
+            *pCurrentBlockRotation -= 1;
+
+        }
+    }
 }
 
 void clearCurrentBlocksOnGrid(int grid[gridWidth][gridHeight]){
@@ -134,6 +192,11 @@ bool checkForValidBlockForPlacing(int grid[gridWidth][gridHeight]){
             }
         }
     }
+    for(int i = 0; i < gridWidth; i++){
+        if(grid[i][gridHeight - 1] == 2){
+            return true;
+        }
+    }
     return false;
 }
 
@@ -157,6 +220,11 @@ int main(void)
     Point2DStruct mainPiecePoint2D = {INITXSTART, INITYSTART};
 
     Point2DStruct *pPoint2DStruct = &mainPiecePoint2D;
+
+    BlockRotation currentPieceRotation = rotation0;
+
+    BlockRotation *pCurrentPieceRotation = &currentPieceRotation;
+
 
     //the reason why we can't just say struct *name = &name; is because each struct is its own unique data type
 
@@ -185,7 +253,7 @@ int main(void)
         
         BeginDrawing();
 
-        tBlock(pPoint2DStruct, grid);
+        tBlock(pPoint2DStruct, grid, pCurrentPieceRotation);
 
         controlBlock(pPoint2DStruct, grid);
 
@@ -200,10 +268,14 @@ int main(void)
 
         drawBackground(gridHeight, gridWidth, squarePixelSize, gridThickness, gridColor);
 
+        blockRotationFunc(pCurrentPieceRotation);
+
         if(checkForValidBlockForPlacing(grid) == true){
             placeActiveBlocks(grid);
             resetBlockToTop(pPoint2DStruct);
         }
+
+        
 
         clearCurrentBlocksOnGrid(grid);
 
